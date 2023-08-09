@@ -1,5 +1,5 @@
 import { DoubleSide, Mesh, MeshBasicMaterial, Object3D, PlaneGeometry, TextureLoader } from "three";
-import { ITEMS, PLANE_ASPECT, SPIRAL_OFFSET_ANGLE_RAD, SPIRAL_OFFSET_Y } from "./define";
+import { ITEMS, PLANE_ASPECT, SPIRAL_OFFSET_ANGLE_RAD, SPIRAL_OFFSET_Y, SPIRAL_SPLIT } from "./define";
 import { loadedmeshes } from "./meshLoader";
 
 const textureLoader = new TextureLoader
@@ -50,14 +50,42 @@ export default class SpiralItem {
       if (x < 0) pos.setX(i, -halfOfPlaneWidth)
     }
 
+    const centerRot = itemRot / (Math.PI / 180)
+    let rRot = (centerRot + 360 / SPIRAL_SPLIT / 2) % 360
+    let lRot = (centerRot - 360 / SPIRAL_SPLIT / 2) % 360
+    if (rRot < 0) rRot += 360
+    if (lRot < 0) lRot += 360
+
+    const halfTheta = 360 / SPIRAL_SPLIT / 2
+    const halfThetaL = 360 - halfTheta
+    let rAjustRate = 0
+    if (0 <= rRot && rRot < halfTheta) {
+      rAjustRate = lerp(0, 0, halfTheta, -1, rRot)
+    } else if (halfTheta <= rRot && rRot < halfThetaL) {
+      rAjustRate = lerp(halfTheta, -1, halfThetaL, 1, rRot)
+    } else if (halfThetaL <= rRot && rRot < 360) {
+      rAjustRate = lerp(halfThetaL, 1, 360, 0, rRot)
+    }
+    let lAjustRate = 0
+    if (0 <= lRot && lRot < halfTheta) {
+      lAjustRate = lerp(0, 0, halfTheta, -1, lRot)
+    } else if (halfTheta <= lRot && lRot < halfThetaL) {
+      lAjustRate = lerp(halfTheta, -1, halfThetaL, 1, lRot)
+    } else if (halfThetaL <= lRot && lRot < 360) {
+      lAjustRate = lerp(halfThetaL, 1, 360, 0, lRot)
+    }
+
+    const rAjust = rAjustRate * SPIRAL_OFFSET_Y / 2
+    const lAjust = lAjustRate * SPIRAL_OFFSET_Y / 2
+
 
     const halfOfPlaneHeight = halfOfPlaneWidth / PLANE_ASPECT
     const halfOfSpiralOffsetY = SPIRAL_OFFSET_Y / 2
 
-    pos.setY(0, (-halfOfSpiralOffsetY) + halfOfPlaneHeight)  // left top
-    pos.setY(1, (halfOfSpiralOffsetY) + halfOfPlaneHeight) // right top
-    pos.setY(2, (-halfOfSpiralOffsetY) - halfOfPlaneHeight) // left bottom
-    pos.setY(3, (halfOfSpiralOffsetY) - halfOfPlaneHeight) // right bottom
+    pos.setY(0, (-halfOfSpiralOffsetY) + halfOfPlaneHeight + lAjust)  // left top
+    pos.setY(1, (halfOfSpiralOffsetY) + halfOfPlaneHeight + rAjust) // right top
+    pos.setY(2, (-halfOfSpiralOffsetY) - halfOfPlaneHeight + lAjust) // left bottom
+    pos.setY(3, (halfOfSpiralOffsetY) - halfOfPlaneHeight + rAjust) // right bottom
     pos.needsUpdate = true
   }
 
@@ -67,4 +95,9 @@ export default class SpiralItem {
     this.object.traverse(v => v.userData = { i })
     parent.add(this.object)
   }
+}
+
+
+function lerp(x0: number, y0: number, x1: number, y1: number, x: number) {
+  return y0 + (x - x0) * (y1 - y0) / (x1 - x0)
 }
