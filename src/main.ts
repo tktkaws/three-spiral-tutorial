@@ -8,6 +8,7 @@ Promise
   .then(() => {
     spiralSystem.init()
     const loop = () => {
+      spiralSystem.exec()
       renderingSystem.exec()
       requestAnimationFrame(loop)
     }

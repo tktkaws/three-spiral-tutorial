@@ -1,5 +1,5 @@
 import { DoubleSide, Mesh, MeshBasicMaterial, Object3D, PlaneGeometry, TextureLoader } from "three";
-import { ITEMS } from "./define";
+import { ITEMS, SPIRAL_OFFSET_ANGLE_RAD } from "./define";
 import { loadedmeshes } from "./meshLoader";
 
 const textureLoader = new TextureLoader
@@ -33,6 +33,11 @@ export default class SpiralItem {
     })
     this.object = new Mesh(geo, mat)
     this.isPlane = true
+  }
+
+  ajustPlaneShape() {
+    const itemRot = SPIRAL_OFFSET_ANGLE_RAD * this.i
+    this.object.rotation.y = itemRot
   }
 
   constructor(item: typeof ITEMS[number], public i: number, parent: Object3D) {
