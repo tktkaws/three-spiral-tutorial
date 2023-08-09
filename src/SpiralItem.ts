@@ -1,5 +1,5 @@
 import { DoubleSide, Mesh, MeshBasicMaterial, Object3D, PlaneGeometry, TextureLoader } from "three";
-import { ITEMS, SPIRAL_OFFSET_ANGLE_RAD } from "./define";
+import { ITEMS, PLANE_ASPECT, SPIRAL_OFFSET_ANGLE_RAD, SPIRAL_OFFSET_Y } from "./define";
 import { loadedmeshes } from "./meshLoader";
 
 const textureLoader = new TextureLoader
@@ -38,6 +38,27 @@ export default class SpiralItem {
   ajustPlaneShape() {
     const itemRot = SPIRAL_OFFSET_ANGLE_RAD * this.i
     this.object.rotation.y = itemRot
+
+    const halfOfPlaneWidth = Math.tan(SPIRAL_OFFSET_ANGLE_RAD / 2)
+
+    const mesh = this.object as Mesh
+    const pos = mesh.geometry.getAttribute("position")
+
+    for (let i = 0; i < 4; i++) {
+      const x = pos.getX(i)
+      if (x > 0) pos.setX(i, halfOfPlaneWidth)
+      if (x < 0) pos.setX(i, -halfOfPlaneWidth)
+    }
+
+
+    const halfOfPlaneHeight = halfOfPlaneWidth / PLANE_ASPECT
+    const halfOfSpiralOffsetY = SPIRAL_OFFSET_Y / 2
+
+    pos.setY(0, (-halfOfSpiralOffsetY) + halfOfPlaneHeight)  // left top
+    pos.setY(1, (halfOfSpiralOffsetY) + halfOfPlaneHeight) // right top
+    pos.setY(2, (-halfOfSpiralOffsetY) - halfOfPlaneHeight) // left bottom
+    pos.setY(3, (halfOfSpiralOffsetY) - halfOfPlaneHeight) // right bottom
+    pos.needsUpdate = true
   }
 
   constructor(item: typeof ITEMS[number], public i: number, parent: Object3D) {
