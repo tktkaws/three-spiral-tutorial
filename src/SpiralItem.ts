@@ -8,6 +8,18 @@ export default class SpiralItem {
   object!: Object3D
   isPlane = false
 
+  rotationSpeed = {
+    x: Math.random() * .01 + .01,
+    y: Math.random() * .01 + .01,
+    z: Math.random() * .01 + .01,
+  }
+
+  rotate() {
+    this.object.rotation.x += this.rotationSpeed.x
+    this.object.rotation.y += this.rotationSpeed.y
+    this.object.rotation.z += this.rotationSpeed.z
+  }
+
   initAsModel(item: typeof ITEMS[number]) {
     this.object = loadedmeshes[item.model!].clone()
     this.object.traverse(v => {

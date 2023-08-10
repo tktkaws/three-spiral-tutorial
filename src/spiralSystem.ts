@@ -24,6 +24,7 @@ class SpiralSystem {
     this.items.forEach((v, i) => {
       this.calcItemPosition(i, v.object.position)
       if (v.isPlane) v.ajustPlaneShape()
+      else v.rotate()
     })
   }
 }
