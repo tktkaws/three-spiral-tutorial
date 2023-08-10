@@ -7,11 +7,15 @@ Promise
   .all(MODELS.map(v => load(v)))
   .then(() => {
     spiralSystem.init()
-    const loop = () => {
-      spiralSystem.exec()
+
+    let lastTime = 0
+    const loop = (currentTime: number) => {
+      const delta = currentTime - lastTime
+      lastTime = currentTime
+      spiralSystem.exec(delta)
       renderingSystem.exec()
       requestAnimationFrame(loop)
     }
-    loop()
+    loop(0)
   })
 

@@ -47,8 +47,8 @@ export default class SpiralItem {
     this.isPlane = true
   }
 
-  ajustPlaneShape() {
-    const itemRot = SPIRAL_OFFSET_ANGLE_RAD * this.i
+  ajustPlaneShape(spiralRot: number) {
+    const itemRot = SPIRAL_OFFSET_ANGLE_RAD * this.i + spiralRot
     this.object.rotation.y = itemRot
 
     const halfOfPlaneWidth = Math.tan(SPIRAL_OFFSET_ANGLE_RAD / 2)
