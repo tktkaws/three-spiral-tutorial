@@ -1,5 +1,6 @@
 import { BoxGeometry, DirectionalLight, GridHelper, Mesh, MeshStandardMaterial, PerspectiveCamera, Scene, WebGLRenderer } from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
+import { CAMERA_DIST_DEFAULT, SPIRAL_LOOP, SPIRAL_OFFSET_Y, SPIRAL_SPLIT } from "./define"
 
 class RenderingSystem {
   canvas = document.createElement("canvas")
@@ -12,7 +13,7 @@ class RenderingSystem {
   fov = 25
 
   camera = new PerspectiveCamera(this.fov)
-  controls = new OrbitControls(this.camera, this.canvas)
+  // controls = new OrbitControls(this.camera, this.canvas)
 
   scene = new Scene
 
@@ -23,9 +24,10 @@ class RenderingSystem {
     this.renderer.setClearColor(0x333333)
     this.renderer.setPixelRatio(devicePixelRatio)
 
+    const y = SPIRAL_LOOP * SPIRAL_OFFSET_Y * SPIRAL_SPLIT / 2
     this.camera.aspect = width / height
-    this.camera.position.set(20, 20, 20)
-    this.camera.lookAt(0, 0, 0)
+    this.camera.position.set(0, y, CAMERA_DIST_DEFAULT)
+    this.camera.lookAt(0, y, 0)
     this.camera.updateProjectionMatrix()
 
     const grid = new GridHelper(100, 100)
@@ -49,7 +51,7 @@ class RenderingSystem {
   }
 
   exec() {
-    this.controls.update()
+    // this.controls.update()
     this.renderer.render(this.scene, this.camera)
   }
 }
