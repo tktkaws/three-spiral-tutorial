@@ -48,6 +48,19 @@ class RenderingSystem {
     this.scene.add(directionalLight)
 
     document.body.append(this.canvas)
+
+    window.addEventListener("resize", this.resize)
+    this.resize()
+  }
+
+  resize = () => {
+    const width = innerWidth
+    const height = innerHeight
+    this.renderer.setSize(width, height)
+
+    const aspect = width / height
+    this.camera.aspect = aspect
+    this.camera.updateProjectionMatrix()
   }
 
   exec() {
