@@ -1,6 +1,7 @@
 import gsap from "gsap"
 import { Material, Mesh, Raycaster, Vector3 } from "three"
 import { AUTO_GLOBAL_ROT_SPEED, CAMERA_DIST_DEFAULT, CAMERA_DIST_ZOOM, ITEMS, SPIRAL_LOOP, SPIRAL_OFFSET_ANGLE_RAD, SPIRAL_OFFSET_Y, SPIRAL_SPLIT } from "./define"
+import infoPanel from "./infoPanel"
 import PointerState from "./PointerState"
 import renderingSystem from "./renderingSystem"
 import SpiralItem from "./SpiralItem"
@@ -58,6 +59,9 @@ class SpiralSystem {
       duration: .5,
       onUpdate: () => {
         renderingSystem.camera.position.z = this.cameraDist
+      },
+      onComplete: () => {
+        infoPanel.show(ITEMS[i].youtubeId)
       }
     })
   }
@@ -77,6 +81,21 @@ class SpiralSystem {
   init() {
     this.items = ITEMS.map((v, i) => {
       return new SpiralItem(v, i, renderingSystem.scene)
+    })
+
+    infoPanel.closeBtn.addEventListener("click", () => {
+      infoPanel.hide()
+      gsap.to(this, {
+        opacity: 1,
+        cameraDist: CAMERA_DIST_DEFAULT,
+        duration: .5,
+        onUpdate: () => {
+          renderingSystem.camera.position.z = this.cameraDist
+        },
+        onComplete: () => {
+          this.isInFocus = false
+        }
+      })
     })
   }
 
