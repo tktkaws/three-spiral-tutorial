@@ -1,4 +1,4 @@
-import { BoxGeometry, DirectionalLight, GridHelper, Mesh, MeshStandardMaterial, PerspectiveCamera, Scene, WebGLRenderer } from "three"
+import { BoxGeometry, DirectionalLight, GridHelper, MathUtils, Mesh, MeshStandardMaterial, PerspectiveCamera, Scene, WebGLRenderer } from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { CAMERA_DIST_DEFAULT, SPIRAL_LOOP, SPIRAL_OFFSET_Y, SPIRAL_SPLIT } from "./define"
 
@@ -60,6 +60,7 @@ class RenderingSystem {
 
     const aspect = width / height
     this.camera.aspect = aspect
+    this.camera.fov = hfov2vfov(this.fov, aspect)
     this.camera.updateProjectionMatrix()
   }
 
@@ -71,3 +72,8 @@ class RenderingSystem {
 
 const renderingSystem = new RenderingSystem
 export default renderingSystem
+
+
+function hfov2vfov(hfov: number, aspect: number) {
+  return MathUtils.radToDeg(Math.atan(Math.tan(MathUtils.degToRad(hfov) / 2) / aspect) * 2)
+}
