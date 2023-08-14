@@ -1,5 +1,6 @@
-import { Raycaster, Vector3 } from "three"
-import { AUTO_GLOBAL_ROT_SPEED, ITEMS, SPIRAL_LOOP, SPIRAL_OFFSET_ANGLE_RAD, SPIRAL_OFFSET_Y, SPIRAL_SPLIT } from "./define"
+import gsap from "gsap"
+import { Material, Mesh, Raycaster, Vector3 } from "three"
+import { AUTO_GLOBAL_ROT_SPEED, CAMERA_DIST_DEFAULT, CAMERA_DIST_ZOOM, ITEMS, SPIRAL_LOOP, SPIRAL_OFFSET_ANGLE_RAD, SPIRAL_OFFSET_Y, SPIRAL_SPLIT } from "./define"
 import PointerState from "./PointerState"
 import renderingSystem from "./renderingSystem"
 import SpiralItem from "./SpiralItem"
@@ -11,6 +12,11 @@ class SpiralSystem {
   spiralVelocity = { rot: 0, y: 0 }
   items!: SpiralItem[]
   raycaster = new Raycaster
+
+  focusTargetIndex = -1
+  isInFocus = false
+  opacity = 1
+  cameraDist = CAMERA_DIST_DEFAULT
 
   focusItem(i: number) {
     const spiralRotCurrent = this.spiralRot
@@ -40,8 +46,20 @@ class SpiralSystem {
 
     const spiralYByScrollResult = this.spiralYByScroll + spiralYByScrollSub
 
-    this.spiralRot = spiralRotResult
-    this.spiralYByScroll = spiralYByScrollResult
+    // this.spiralRot = spiralRotResult
+    // this.spiralYByScroll = spiralYByScrollResult
+    this.focusTargetIndex = i
+    this.isInFocus = true
+    gsap.to(this, {
+      opacity: 0,
+      spiralRot: spiralRotResult,
+      cameraDist: CAMERA_DIST_ZOOM,
+      spiralYByScroll: spiralYByScrollResult,
+      duration: .5,
+      onUpdate: () => {
+        renderingSystem.camera.position.z = this.cameraDist
+      }
+    })
   }
 
   getPointedObj() {
@@ -95,15 +113,24 @@ class SpiralSystem {
     const spiralYByRot = rotRate * SPIRAL_SPLIT * SPIRAL_OFFSET_Y
     const spiralY = this.spiralYByScroll + spiralYByRot
 
-    this.calcSpiralPositionAndRotation(delta)
+    if (!this.isInFocus) this.calcSpiralPositionAndRotation(delta)
 
     this.items.forEach((v, i) => {
       this.calcItemPosition(i, this.spiralRot, spiralY, v.object.position)
       if (v.isPlane) v.ajustPlaneShape(this.spiralRot)
       else v.rotate()
+
+      v.object.traverse(v => {
+        const mat = ((v as Mesh).material as Material)
+        if (mat) {
+          mat.opacity = this.focusTargetIndex === i
+            ? 1
+            : this.opacity
+        }
+      })
     })
 
-    if (this.pointerState.click) {
+    if (this.pointerState.click && !this.isInFocus) {
       const t = this.getPointedObj()
       if (t) {
         console.log(t.object.userData)
