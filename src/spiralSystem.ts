@@ -12,6 +12,38 @@ class SpiralSystem {
   items!: SpiralItem[]
   raycaster = new Raycaster
 
+  focusItem(i: number) {
+    const spiralRotCurrent = this.spiralRot
+    const spiralRotTarget = SPIRAL_OFFSET_ANGLE_RAD * i * -1
+
+    const spiralRotCurrentRem = spiralRotCurrent % (Math.PI * 2)
+    const spiralRotTargetRem = spiralRotTarget % (Math.PI * 2)
+    let spiralRotSub = spiralRotTargetRem - spiralRotCurrentRem
+
+    if (Math.abs(spiralRotSub) > Math.PI) {
+      spiralRotSub = (Math.PI * 2 - Math.abs(spiralRotSub)) *
+        -Math.sign(spiralRotSub)
+    }
+
+    const spiralRotResult = spiralRotCurrent + spiralRotSub
+
+
+    const rotRate = spiralRotResult / (Math.PI * 2)
+    const spiralYByRot = rotRate * SPIRAL_SPLIT * SPIRAL_OFFSET_Y
+    const spiralYResult = spiralYByRot + this.spiralYByScroll
+
+    const positionBuffer = new Vector3
+    this.calcItemPosition(i, spiralRotResult, spiralYResult, positionBuffer)
+
+    const cameraY = SPIRAL_LOOP * SPIRAL_OFFSET_Y * SPIRAL_SPLIT / 2
+    const spiralYByScrollSub = cameraY - positionBuffer.y
+
+    const spiralYByScrollResult = this.spiralYByScroll + spiralYByScrollSub
+
+    this.spiralRot = spiralRotResult
+    this.spiralYByScroll = spiralYByScrollResult
+  }
+
   getPointedObj() {
     const rayFrom = {
       x: this.pointerState.currentPos.x / innerWidth * 2 - 1,
@@ -73,7 +105,10 @@ class SpiralSystem {
 
     if (this.pointerState.click) {
       const t = this.getPointedObj()
-      if (t) console.log(t.object.userData)
+      if (t) {
+        console.log(t.object.userData)
+        this.focusItem(t.object.userData.i)
+      }
     }
 
     this.pointerState.update()
