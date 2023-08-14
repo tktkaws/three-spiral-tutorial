@@ -1,4 +1,4 @@
-import { Vector3 } from "three"
+import { Raycaster, Vector3 } from "three"
 import { AUTO_GLOBAL_ROT_SPEED, ITEMS, SPIRAL_LOOP, SPIRAL_OFFSET_ANGLE_RAD, SPIRAL_OFFSET_Y, SPIRAL_SPLIT } from "./define"
 import PointerState from "./PointerState"
 import renderingSystem from "./renderingSystem"
@@ -10,6 +10,20 @@ class SpiralSystem {
   spiralYByScroll = 0
   spiralVelocity = { rot: 0, y: 0 }
   items!: SpiralItem[]
+  raycaster = new Raycaster
+
+  getPointedObj() {
+    const rayFrom = {
+      x: this.pointerState.currentPos.x / innerWidth * 2 - 1,
+      y: (this.pointerState.currentPos.y / innerHeight * 2 - 1) * -1
+    }
+    this.raycaster.setFromCamera(rayFrom, renderingSystem.camera)
+
+    const objs = this.items.map(v => v.object)
+    const intersected = this.raycaster.intersectObjects(objs)
+    return intersected[0]
+  }
+
   init() {
     this.items = ITEMS.map((v, i) => {
       return new SpiralItem(v, i, renderingSystem.scene)
@@ -56,6 +70,11 @@ class SpiralSystem {
       if (v.isPlane) v.ajustPlaneShape(this.spiralRot)
       else v.rotate()
     })
+
+    if (this.pointerState.click) {
+      const t = this.getPointedObj()
+      if (t) console.log(t.object.userData)
+    }
 
     this.pointerState.update()
   }
